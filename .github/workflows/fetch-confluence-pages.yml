@@ -28,7 +28,7 @@ jobs:
           ids=$(jq -r '.page_ids[]' config.json)
           for id in $ids; do
             echo "Fetching page $id"
-            auth=$(printf '%s:%s' "$EMAIL" "$API_TOKEN" | base64)
+            echo "Full url: $CONFLUENCE_PAGE_BASE/$id?body-format=storage"
             curl --request GET \
               --url '$CONFLUENCE_PAGE_BASE/$id?body-format=storage' \
               --user '$EMAIL:$API_TOKEN' \
