@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CONFLUENCE_BASE: https://waka-kotahi.atlassian.net/wiki
-      EMAIL: ${{ secrets.CONFLUENCE_EMAIL }}
+      EMAIL: ${{ vars.CONFLUENCE_EMAIL }}
       API_TOKEN: ${{ secrets.CONFLUENCE_API_TOKEN }}
     steps:
       - name: Checkout repository
