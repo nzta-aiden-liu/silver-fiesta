@@ -1,0 +1,40 @@
+name: Fetch Confluence Pages
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fetch-pages:
+    runs-on: ubuntu-latest
+    env:
+      CONFLUENCE_BASE: https://waka-kotahi.atlassian.net/wiki
+      EMAIL: ${{ secrets.CONFLUENCE_EMAIL }}
+      API_TOKEN: ${{ secrets.CONFLUENCE_API_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Prepare pages directory
+        run: mkdir -p pages
+
+      - name: Fetch pages from Confluence
+        run: |
+          set -euo pipefail
+          ids=$(jq -r '.page_ids[]' config.json)
+          for id in $ids; do
+            echo "Fetching page $id"
+            auth=$(printf '%s:%s' "$EMAIL" "$API_TOKEN" | base64)
+            curl -sS -H "Authorization: Basic $auth" -H 'Accept: application/json' "$CONFLUENCE_BASE/rest/api/content/$id?body-format=storage" \
+              | jq -r '.body.storage.value' > pages/page_${id}.html
+          done
+
+      - name: Upload pages artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: confluence-pages
+          path: pages
