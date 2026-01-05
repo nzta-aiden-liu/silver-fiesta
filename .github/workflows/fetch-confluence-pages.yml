@@ -7,7 +7,7 @@ jobs:
   fetch-pages:
     runs-on: ubuntu-latest
     env:
-      CONFLUENCE_BASE: https://waka-kotahi.atlassian.net/wiki
+      CONFLUENCE_PAGE_BASE: https://waka-kotahi.atlassian.net/wiki/api/v2/pages
       EMAIL: ${{ vars.CONFLUENCE_EMAIL }}
       API_TOKEN: ${{ secrets.CONFLUENCE_API_TOKEN }}
     steps:
@@ -29,8 +29,10 @@ jobs:
           for id in $ids; do
             echo "Fetching page $id"
             auth=$(printf '%s:%s' "$EMAIL" "$API_TOKEN" | base64)
-            curl -sS -H "Authorization: Basic $auth" -H 'Accept: application/json' "$CONFLUENCE_BASE/rest/api/content/$id?body-format=storage" \
-              | jq -r '.body.storage.value' > pages/page_${id}.html
+            curl --request GET \
+              --url '$CONFLUENCE_PAGE_BASE/$id?body-format=storage' \
+              --user '$EMAIL:$API_TOKEN' \
+              --header 'Accept: application/json' | jq -r '.body.storage.value' > pages/page_${id}.html
           done
 
       - name: Upload pages artifact
