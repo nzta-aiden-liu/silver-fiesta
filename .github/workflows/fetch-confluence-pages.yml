@@ -30,8 +30,8 @@ jobs:
             echo "Fetching page $id"
             echo "Full url: $CONFLUENCE_PAGE_BASE/$id?body-format=storage"
             curl --request GET \
-              --url '$CONFLUENCE_PAGE_BASE/$id?body-format=storage' \
-              --user '$EMAIL:$API_TOKEN' \
+              --url "$CONFLUENCE_PAGE_BASE/$id?body-format=storage" \
+              --user "$EMAIL:$API_TOKEN" \
               --header 'Accept: application/json' | jq -r '.body.storage.value' > pages/page_${id}.html
           done
 
