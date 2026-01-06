@@ -43,6 +43,7 @@ jobs:
             GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh extension install https://github.com/github/gh-models
+          gh models list
 
       - name: Extract instructions with Copilot
         env:
