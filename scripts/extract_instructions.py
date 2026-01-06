@@ -25,7 +25,7 @@ def call_copilot_api(prompt: str) -> Optional[str]:
         # Use GitHub CLI with Copilot extension
         # Note: Requires 'gh copilot' CLI to be installed/available
         result = subprocess.run(
-            ["gh", "copilot", "explain", prompt],
+            ["gh", "models", "run", "openai/gpt-4.1", prompt],
             capture_output=True,
             text=True,
             timeout=30
