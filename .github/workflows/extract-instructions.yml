@@ -1,6 +1,7 @@
 name: Extract Instructions with Copilot
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["Fetch Confluence Pages"]
     types:
@@ -8,9 +9,11 @@ on:
 
 jobs:
   extract-instructions:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: read
       
     steps:
       - name: Checkout repository
@@ -30,6 +33,7 @@ jobs:
         with:
           name: confluence-pages
           path: pages
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract instructions with Copilot
         env:
