@@ -1,0 +1,55 @@
+name: Extract Instructions with Copilot
+
+on:
+  workflow_run:
+    workflows: ["Fetch Confluence Pages"]
+    types:
+      - completed
+
+jobs:
+  extract-instructions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install requests beautifulsoup4
+
+      - name: Download pages artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: confluence-pages
+          path: pages
+
+      - name: Extract instructions with Copilot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/extract_instructions.py
+
+      - name: Upload extracted instructions
+        uses: actions/upload-artifact@v4
+        with:
+          name: extracted-instructions
+          path: instructions
+
+      - name: Create summary
+        run: |
+          echo "## Instruction Extraction Summary" >> $GITHUB_STEP_SUMMARY
+          echo "Processed $(ls -1 instructions/ 2>/dev/null | wc -l) files" >> $GITHUB_STEP_SUMMARY
+          echo "Check the artifacts for extracted instructions" >> $GITHUB_STEP_SUMMARY
+          if [ -d "instructions" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Generated Files:" >> $GITHUB_STEP_SUMMARY
+            ls -1 instructions/ | sed 's/^/- /' >> $GITHUB_STEP_SUMMARY
+          fi
