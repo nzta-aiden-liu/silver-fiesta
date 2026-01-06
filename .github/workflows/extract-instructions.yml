@@ -33,7 +33,9 @@ jobs:
         with:
           name: confluence-pages
           path: pages
+          repository: ${{ github.repository }}
           run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract instructions with Copilot
         env:
