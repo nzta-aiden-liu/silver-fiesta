@@ -41,6 +41,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          gh extension install github/gh-copilot
           python3 scripts/extract_instructions.py
 
       - name: Upload extracted instructions
