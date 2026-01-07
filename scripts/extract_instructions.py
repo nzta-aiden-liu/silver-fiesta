@@ -9,32 +9,47 @@ from pathlib import Path
 from typing import Optional
 import subprocess
 from bs4 import BeautifulSoup
-import re
 
-def call_copilot_api(prompt: str) -> Optional[str]:
+from azure.ai.inference import ChatCompletionsClient
+from azure.ai.inference.models import SystemMessage, UserMessage
+from azure.core.credentials import AzureKeyCredential
+
+def call_copilot_api(prompt: str="", model: str="openai/gpt-4.1") -> Optional[str]:
     """
     Call the GitHub Copilot API to extract instructions.
     
     Args:
+        model: The model to use for the API call
         prompt: The prompt to send to Copilot
         
     Returns:
         Markdown formatted response or None if failed
     """
     try:
-        # Use GitHub CLI with Copilot extension
-        # Note: Requires 'gh copilot' CLI to be installed/available
-        result = subprocess.run(
-            ["gh", "models", "run", "openai/gpt-4.1", prompt],
-            capture_output=True,
-            text=True,
-            timeout=30
-        )
+        token = os.environ["GITHUB_TOKEN"]
+        endpoint = "https://models.github.ai/inference"
         
-        if result.returncode == 0:
-            return result.stdout
+        client = ChatCompletionsClient(
+            endpoint=endpoint,
+            credential=AzureKeyCredential(token),
+            api_version="2024-12-01-preview",
+        )
+
+        response = client.complete(
+            messages=[
+                {
+                    "role": "developer",
+                    "content": "You are a helpful assistant that helps extract github copilot instructions.",
+                },
+                UserMessage(prompt),
+            ],
+            model=model
+        )
+
+        if response.choices:
+            return response.choices[0].message.content
         else:
-            print(f"Error calling Copilot API: {result.stderr}")
+            print("Error calling Copilot API: No choices returned")
             return None
             
     except Exception as e:
@@ -82,9 +97,9 @@ def extract_instructions_from_html(html_content: str) -> str:
     clean_text = extract_text_from_html(html_content)
     
     # Truncate to reasonable size for API
-    text_preview = clean_text[:4000]
+    text_preview = clean_text[:1000000]  # 1 million characters limit
     
-    prompt = f"""Extract clear, actionable instructions from this content. Format the output as markdown that GitHub Copilot can consume.
+    prompt = f"""Extract clear, actionable GitHub Copilot instructions from this content. Format the output as markdown so that GitHub Copilot can consume.
 
 Structure your response as:
 1. A clear title (as # Markdown heading)
@@ -98,8 +113,6 @@ Content to analyze:
 
 Provide ONLY the markdown output, no additional explanation."""
 
-    # For now, generate a template markdown structure
-    # In production, this would call the actual Copilot API and return the result
     markdown = call_copilot_api(prompt)
     
     if markdown:
