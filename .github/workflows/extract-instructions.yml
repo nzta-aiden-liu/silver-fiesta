@@ -27,7 +27,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install beautifulsoup4 openai
+          pip install beautifulsoup4 azure-ai-inference
 
       - name: Download pages artifact
         uses: actions/download-artifact@v4
