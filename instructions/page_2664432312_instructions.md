@@ -1,6 +1,6 @@
 # Efficient Collaboration Using Trunk-Based Development with Release Branches on GitHub
 
-**Source page version:** 16
+Source page version: 16
 
 ## Prerequisites
 
