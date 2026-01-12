@@ -83,12 +83,13 @@ def extract_text_from_html(html_content: str) -> str:
         return html_content
 
 
-def extract_instructions_from_html(html_content: str) -> str:
+def extract_instructions_from_html(html_content: str, version: str = "N/A") -> str:
     """
     Extract instructions from HTML content and format as Markdown for Copilot.
     
     Args:
         html_content: Raw HTML content
+        version: Version of the source page
         
     Returns:
         Markdown formatted instructions
@@ -103,7 +104,7 @@ def extract_instructions_from_html(html_content: str) -> str:
 
 Structure your response as:
 1. A clear title (as # Markdown heading)
-2. Source page version: <!-- Add version info if available -->
+2. Source page version: {version}
 3. Prerequisites section (if applicable)
 4. Step-by-step instructions (numbered list)
 5. Warnings or Important Notes (if applicable)
@@ -120,15 +121,16 @@ Provide ONLY the markdown output, no additional explanation."""
         return markdown
     else:
         # Fallback template if API fails
-        return generate_markdown_template(clean_text)
+        return generate_markdown_template(clean_text, version)
 
 
-def generate_markdown_template(text_content: str) -> str:
+def generate_markdown_template(text_content: str, version: str = "N/A") -> str:
     """
     Generate a markdown template when API is unavailable.
     
     Args:
         text_content: Clean text content from HTML
+        version: Version of the source page
         
     Returns:
         Markdown formatted template
@@ -138,7 +140,8 @@ def generate_markdown_template(text_content: str) -> str:
     title = lines[0] if lines else "Instructions"
     
     markdown = f"""# {title}
-Source page version: <!-- Add version info if available -->
+
+Source page version: {version}
 
 ## Prerequisites
 
@@ -194,9 +197,18 @@ def process_pages_directory(pages_dir: str = "pages", output_dir: str = "instruc
             # Read HTML content
             with open(html_file, "r", encoding="utf-8") as f:
                 html_content = f.read()
+
+            # Extract version info if present
+            version = "N/A"
+            version_line = next((line for line in html_content.splitlines() if "<!-- Version:" in line), None)
+            if version_line:
+                version = version_line.split("<!-- Version:")[1].split("-->")[0].strip()
+                print(f"  ✓ Detected version: {version}")
+            else:
+                print("  ⚠️ No version info found")
             
             # Extract instructions
-            markdown_instructions = extract_instructions_from_html(html_content)
+            markdown_instructions = extract_instructions_from_html(html_content, version)
             
             # Save to output file
             output_file = output_path / f"{html_file.stem}_instructions.md"
