@@ -25,14 +25,21 @@ jobs:
       - name: Fetch pages from Confluence
         run: |
           set -euo pipefail
-          ids=$(jq -r '.page_ids[]' config.json)
-          for id in $ids; do
-            echo "Fetching page $id"
-            echo "Full url: $CONFLUENCE_PAGE_BASE/$id?body-format=storage"
-            curl --request GET \
-              --url "$CONFLUENCE_PAGE_BASE/$id?body-format=storage" \
+          jq -r '.pages[] | "\(.id) \(.version)"' config.json | while read id version; do
+            echo "Fetching page $id (version: $version)"
+            url="$CONFLUENCE_PAGE_BASE/$id?body-format=storage"
+            if [ "$version" != "latest" ]; then
+              url="$url&version=$version"
+            fi
+            echo "Full url: $url"
+            response=$(curl --request GET \
+              --url "$url" \
               --user "$EMAIL:$API_TOKEN" \
-              --header 'Accept: application/json' | jq -r '.body.storage.value' > pages/page_${id}.html
+              --header 'Accept: application/json')
+            actual_version=$(echo "$response" | jq -r '.version.number')
+            echo "Page version: $actual_version"
+            echo "<!-- Version: $actual_version -->" > pages/page_${id}.html
+            echo "$response" | jq -r '.body.storage.value' >> pages/page_${id}.html
           done
 
       - name: Upload pages artifact

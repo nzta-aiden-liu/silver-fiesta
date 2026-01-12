@@ -103,10 +103,11 @@ def extract_instructions_from_html(html_content: str) -> str:
 
 Structure your response as:
 1. A clear title (as # Markdown heading)
-2. Prerequisites section (if applicable)
-3. Step-by-step instructions (numbered list)
-4. Warnings or Important Notes (if applicable)
-5. Key Concepts (brief explanations of technical terms)
+2. Source page version: <!-- Add version info if available -->
+3. Prerequisites section (if applicable)
+4. Step-by-step instructions (numbered list)
+5. Warnings or Important Notes (if applicable)
+6. Key Concepts (brief explanations of technical terms)
 
 Content to analyze:
 {text_preview}
@@ -137,6 +138,7 @@ def generate_markdown_template(text_content: str) -> str:
     title = lines[0] if lines else "Instructions"
     
     markdown = f"""# {title}
+Source page version: <!-- Add version info if available -->
 
 ## Prerequisites
 
