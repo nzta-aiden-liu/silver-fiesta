@@ -207,6 +207,15 @@ def process_pages_directory(pages_dir: str = "pages", output_dir: str = "instruc
             else:
                 print("  ⚠️ No version info found")
             
+            # Compare version with existing instructions file if exists
+            existing_file = output_path / f"{html_file.stem}_instructions.md"
+            if existing_file.exists():
+                with open(existing_file, "r", encoding="utf-8") as ef:
+                    existing_content = ef.read()
+                if f"Source page version: {version}" in existing_content:
+                    print("  ✓ Instructions already up-to-date, skipping extraction")
+                    continue
+            
             # Extract instructions
             markdown_instructions = extract_instructions_from_html(html_content, version)
             
