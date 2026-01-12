@@ -168,15 +168,17 @@ Source page version: {version}
     return markdown
 
 
-def process_pages_directory(pages_dir: str = "pages", output_dir: str = "instructions") -> None:
+def process_pages_directory(pages_dir: str = "pages", instructions_dir: str = "instructions", output_dir: str = "temp_instructions") -> None:
     """
     Process all HTML files in the pages directory.
     
     Args:
         pages_dir: Directory containing HTML files
+        instructions_dir: Directory containing existing instructions
         output_dir: Directory to save extracted instructions
     """
     pages_path = Path(pages_dir)
+    instructions_path = Path(instructions_dir)
     output_path = Path(output_dir)
     
     # Create output directory
@@ -208,7 +210,7 @@ def process_pages_directory(pages_dir: str = "pages", output_dir: str = "instruc
                 print("  ⚠️ No version info found")
             
             # Compare version with existing instructions file if exists
-            existing_file = output_path / f"{html_file.stem}_instructions.md"
+            existing_file = instructions_path / f"{html_file.stem}_instructions.md"
             if existing_file.exists():
                 with open(existing_file, "r", encoding="utf-8") as ef:
                     existing_content = ef.read()
