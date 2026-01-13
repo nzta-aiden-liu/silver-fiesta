@@ -210,7 +210,7 @@ def process_pages_directory(pages_dir: str = "pages", instructions_dir: str = "i
                 print("  ⚠️ No version info found")
             
             # Compare version with existing instructions file if exists
-            existing_file = instructions_path / f"{html_file.stem}_instructions.md"
+            existing_file = instructions_path / f"{html_file.stem}.instructions.md"
             if existing_file.exists():
                 with open(existing_file, "r", encoding="utf-8") as ef:
                     existing_content = ef.read()
@@ -222,7 +222,7 @@ def process_pages_directory(pages_dir: str = "pages", instructions_dir: str = "i
             markdown_instructions = extract_instructions_from_html(html_content, version)
             
             # Save to output file
-            output_file = output_path / f"{html_file.stem}_instructions.md"
+            output_file = output_path / f"{html_file.stem}.instructions.md"
             with open(output_file, "w", encoding="utf-8") as f:
                 f.write(markdown_instructions)
             

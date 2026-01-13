@@ -49,6 +49,7 @@ jobs:
         with:
           name: extracted-instructions
           path: temp_instructions
+          if-no-files-found: warn
 
       - name: Create summary
         run: |
