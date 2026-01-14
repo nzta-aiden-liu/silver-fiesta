@@ -165,7 +165,7 @@ jobs:
                   --head "$branch_name" \
                   --base "main" \
                   --title "Docs (Instructions): page_$page_id - $summary" \
-                  --assignee "@nzta-aiden-liu" \
+                  --assignee "@aiden.liu@nzta.govt.nz" \
                   --body "/template"
               fi
             fi
