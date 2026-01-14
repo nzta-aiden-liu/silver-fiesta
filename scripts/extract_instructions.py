@@ -103,7 +103,7 @@ def extract_instructions_from_html(html_content: str, version: str = "N/A") -> s
     prompt = f"""Extract clear, actionable GitHub Copilot instructions from this content. Format the output as markdown so that GitHub Copilot can consume.
 
 Structure your response as:
-1. A clear title (use same title from extracted page)
+1. A clear title (use EXACT SAME title from extracted page)
 2. Source page version: {version} (MUST USE PLAIN FORMAT FOR THIS LINE)
 3. Prerequisites section (if applicable)
 4. Step-by-step instructions (numbered list)
