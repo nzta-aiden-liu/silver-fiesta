@@ -123,8 +123,8 @@ jobs:
                 summary=$(head -n 1 "$file" | sed 's/^# //')
                 git commit -m "Docs (Instructions): page_$page_id - $summary"
                 
-                # Push branch
-                git push -u origin "$branch_name"
+                # Push branch with force-with-lease for rebased branches
+                git push --force-with-lease origin "$branch_name"
               fi
               
               # Switch back to main for next iteration
