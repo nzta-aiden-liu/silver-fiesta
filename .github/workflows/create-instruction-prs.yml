@@ -164,8 +164,8 @@ jobs:
                 gh pr create \
                   --head "$branch_name" \
                   --base "main" \
-                  --title "Docs (Instructions): page_$page_id - $summary"
-                  --assignees "@me"
+                  --title "Docs (Instructions): page_$page_id - $summary" \
+                  --assignees "@me" \
                   --body "/template"
               fi
             fi
