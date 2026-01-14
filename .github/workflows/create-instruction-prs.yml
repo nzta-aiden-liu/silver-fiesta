@@ -101,6 +101,8 @@ jobs:
               if git rev-parse --verify "origin/$branch_name" >/dev/null 2>&1; then
                 echo "✓ Branch $branch_name already exists"
                 git checkout "$branch_name"
+                echo "✓ Resyncing with main branch"
+                git pull origin main --rebase
               else
                 echo "✓ Creating new branch $branch_name"
                 git checkout -b "$branch_name"
