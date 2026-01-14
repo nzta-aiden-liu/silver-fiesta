@@ -1,0 +1,172 @@
+name: Create/Update Instruction PRs
+
+on:
+  workflow_run:
+    workflows: ["Extract Instructions with Copilot"]
+    types:
+      - completed
+
+jobs:
+  create-instruction-prs:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download extracted instructions artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: extracted-instructions
+          path: extracted-instructions
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check if artifact exists
+        id: check-artifact
+        run: |
+          if [ -d "extracted-instructions" ] && [ "$(ls -A extracted-instructions)" ]; then
+            echo "artifact_exists=true" >> $GITHUB_OUTPUT
+            echo "Found extracted instructions:"
+            ls -la extracted-instructions/
+          else
+            echo "artifact_exists=false" >> $GITHUB_OUTPUT
+            echo "No extracted instructions artifact found"
+          fi
+
+      - name: Exit if no artifact
+        if: ${{ steps.check-artifact.outputs.artifact_exists == 'false' }}
+        run: |
+          echo "No extracted instructions found. Exiting."
+          exit 0
+
+      - name: Set up Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Process extracted instructions
+        id: process-files
+        run: |
+          cd extracted-instructions
+          for file in *.md; do
+            if [ -f "$file" ]; then
+              # Extract page_id from filename (e.g., page_3249143835.instructions.md)
+              page_id=$(echo "$file" | sed -E 's/page_([0-9]+)\.instructions\.md/\1/')
+              echo "Processing page_id: $page_id"
+              
+              # Create branch name
+              branch_name="docs/page_${page_id}_instruction"
+              echo "Branch name: $branch_name"
+              
+              # Store for next step
+              echo "page_ids<<EOF" >> $GITHUB_OUTPUT
+              echo "$page_id" >> $GITHUB_OUTPUT
+              echo "EOF" >> $GITHUB_OUTPUT
+            fi
+          done
+
+      - name: Create/update branches and PRs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd extracted-instructions
+          
+          for file in *.md; do
+            if [ -f "$file" ]; then
+              # Extract page_id from filename
+              page_id=$(echo "$file" | sed -E 's/page_([0-9]+)\.instructions\.md/\1/')
+              branch_name="docs/page_${page_id}_instructions"
+              instructions_file="instructions/${file}"
+              
+              echo "=========================================="
+              echo "Processing: $file (Page ID: $page_id)"
+              echo "Branch: $branch_name"
+              echo "Target file: $instructions_file"
+              echo "=========================================="
+              
+              # Check if branch exists
+              if git rev-parse --verify "origin/$branch_name" >/dev/null 2>&1; then
+                echo "✓ Branch $branch_name already exists"
+                git checkout "$branch_name"
+              else
+                echo "✓ Creating new branch $branch_name"
+                git checkout -b "$branch_name"
+              fi
+              
+              # Copy file to instructions directory
+              mkdir -p ../instructions
+              cp "$file" "../$instructions_file"
+              
+              # Check if there are changes
+              if git diff --quiet ../instructions/; then
+                echo "✓ No changes detected for page_$page_id"
+              else
+                echo "✓ Changes detected, committing..."
+                git add "../$instructions_file"
+                
+                # Generate commit message with summary
+                summary=$(head -n 1 "$file" | sed 's/^# //')
+                git commit -m "Docs (Instructions): page_$page_id - $summary"
+                
+                # Push branch
+                git push -u origin "$branch_name"
+                
+                # Check if PR exists
+                existing_pr=$(gh pr list \
+                  --head "$branch_name" \
+                  --base "main" \
+                  --json number \
+                  --jq '.[0].number' 2>/dev/null || echo "")
+                
+                if [ -n "$existing_pr" ]; then
+                  echo "✓ Found existing PR #$existing_pr"
+                  # Update PR description with latest summary
+                  summary=$(head -n 1 "$file" | sed 's/^# //')
+                  gh pr edit "$existing_pr" \
+                    --title "Docs (Instructions): page_$page_id - $summary" \
+                    --body "Updated instruction documentation for page $page_id
+
+**Summary of changes:**
+- Extracted and updated instructions from page_$page_id
+- Auto-generated by GitHub Actions
+
+Please review the changes and approve to merge."
+                else
+                  echo "✓ Creating new PR for page_$page_id"
+                  summary=$(head -n 1 "$file" | sed 's/^# //')
+                  gh pr create \
+                    --head "$branch_name" \
+                    --base "main" \
+                    --title "Docs (Instructions): page_$page_id - $summary" \
+                    --body "New instruction documentation for page $page_id
+
+**Summary of changes:**
+- Extracted instructions from page_$page_id
+- Auto-generated by GitHub Actions
+
+Please review the changes and approve to merge."
+                fi
+              fi
+              
+              # Switch back to main for next iteration
+              git checkout main
+            fi
+          done
+
+      - name: Create summary
+        if: ${{ steps.check-artifact.outputs.artifact_exists == 'true' }}
+        run: |
+          echo "## Instruction PR Creation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "Successfully processed extracted instructions and created/updated PRs" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Files Processed:" >> $GITHUB_STEP_SUMMARY
+          ls -1 extracted-instructions/ | sed 's/^/- /' >> $GITHUB_STEP_SUMMARY
