@@ -104,7 +104,7 @@ def extract_instructions_from_html(html_content: str, version: str = "N/A") -> s
 
 Structure your response as:
 1. A clear title (use same title from extracted page)
-2. Source page version: {version}
+2. Source page version: {version} (MUST USE PLAIN FORMAT FOR THIS LINE)
 3. Prerequisites section (if applicable)
 4. Step-by-step instructions (numbered list)
 5. Warnings or Important Notes (if applicable)
