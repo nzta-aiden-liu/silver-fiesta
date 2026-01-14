@@ -50,12 +50,14 @@ jobs:
           exit 0
 
       - name: Set up Git
+        if: ${{ steps.check-artifact.outputs.artifact_exists == 'true' }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
       - name: Process extracted instructions
         id: process-files
+        if: ${{ steps.check-artifact.outputs.artifact_exists == 'true' }}
         run: |
           cd extracted-instructions
           for file in *.md; do
@@ -76,6 +78,7 @@ jobs:
           done
 
       - name: Create/update branches
+        if: ${{ steps.check-artifact.outputs.artifact_exists == 'true' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -128,6 +131,7 @@ jobs:
           done
 
       - name: Create/update PRs
+        if: ${{ steps.check-artifact.outputs.artifact_exists == 'true' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -175,7 +179,7 @@ jobs:
         if: ${{ steps.check-artifact.outputs.artifact_exists == 'true' }}
         run: |
           echo "## Instruction PR Creation Summary" >> $GITHUB_STEP_SUMMARY
-          echo "Successfully processed extracted instructions and created/updated PRs" >> $GITHUB_STEP_SUMMARY
+          echo "Successfully committed extracted instructions and created/updated PRs" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Files Processed:" >> $GITHUB_STEP_SUMMARY
           ls -1 extracted-instructions/ | sed 's/^/- /' >> $GITHUB_STEP_SUMMARY
