@@ -39,6 +39,8 @@ jobs:
             actual_version=$(echo "$response" | jq -r '.version.number')
             echo "Page version: $actual_version"
             echo "<!-- Version: $actual_version -->" > pages/page_${id}.html
+            title=$(echo "$response" | jq -r '.title')
+            echo "<h1>$title</h1>" >> pages/page_${id}.html
             echo "$response" | jq -r '.body.storage.value' >> pages/page_${id}.html
           done
 
