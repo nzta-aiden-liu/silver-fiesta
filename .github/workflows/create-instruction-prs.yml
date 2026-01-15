@@ -112,10 +112,8 @@ jobs:
               mkdir -p ../instructions
               cp "$file" "../$instructions_file"
               
-              # Check if there are changes
-              if git diff --quiet ../instructions/; then
-                echo "✓ No changes detected for page_$page_id"
-              else
+              # Check if there are changes (untracked or modified files)
+              if git status --short ../instructions/ | grep -q .; then
                 echo "✓ Changes detected, committing..."
                 git add "../$instructions_file"
                 
@@ -125,6 +123,8 @@ jobs:
                 
                 # Push branch with force-with-lease for rebased branches
                 git push --force-with-lease origin "$branch_name"
+              else
+                echo "✓ No changes detected for page_$page_id"
               fi
               
               # Switch back to main for next iteration
@@ -162,10 +162,12 @@ jobs:
                   --body "$(cat ../.github/pull_request_template.md)"
               else
                 echo "✓ Creating new PR for page_$page_id"
+                echo "$summary"
                 gh pr create \
                   --head "$branch_name" \
                   --base "main" \
                   --title "Docs (Instructions): page_$page_id - $summary" \
+                  --assignee "nzta-aiden-liu" \
                   --body "$(cat ../.github/pull_request_template.md)"
               fi
             fi
