@@ -14,5 +14,6 @@ Team and project-specific instructions to enhance GitHub Copilot's behavior for 
 
 | Title | Description |
 | ----- | ----------- |
-| [Efficient Collaboration Using Trunk-Based Development with Release Branches on GitHub](instructions/page_2664432312.instructions.md) | Instructions for efficient collaboration using trunk-based development with release branches on GitHub. |
-| [GitHub Copilot Instructions: Best Practices for Trunk-Based Development, Code Review, Repo Audits, and Knowledge Sharing](instructions/page_3249143835.instructions.md) | Best practices for trunk-based development, code review, repo audits, and knowledge sharing using GitHub Copilot. |
+| [GitHub Actions](./instructions/page_2364965145.instructions.md) | Instructions for using GitHub Actions. |
+| [Branching Strategy](./instructions/page_2664432312.instructions.md) | Instructions for efficient collaboration using trunk-based development with release branches on GitHub. |
+| [Best Practices](./instructions/page_3249143835.instructions.md) | Best practices for trunk-based development, code review, repo audits, and knowledge sharing using GitHub Copilot. |
