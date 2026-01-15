@@ -166,8 +166,7 @@ jobs:
                   --head "$branch_name" \
                   --base "main" \
                   --title "Docs (Instructions): page_$page_id - $summary" \
-                  --assignee "nzta-aiden-liu" \
-                  --body-file "../.github/pull_request_template.md"
+                  --body-file ../.github/pull_request_template.md
               fi
             fi
           done
