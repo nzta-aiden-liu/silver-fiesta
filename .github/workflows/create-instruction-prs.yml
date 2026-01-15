@@ -158,7 +158,8 @@ jobs:
               if [ -n "$existing_pr" ]; then
                 echo "✓ Found existing PR #$existing_pr"
                 gh pr edit "$existing_pr" \
-                  --title "Docs (Instructions): page_$page_id - $summary"
+                  --title "Docs (Instructions): page_$page_id - $summary" \
+                  --body-file ".github/pull_request_templates.md"
               else
                 echo "✓ Creating new PR for page_$page_id"
                 gh pr create \
@@ -166,7 +167,7 @@ jobs:
                   --base "main" \
                   --title "Docs (Instructions): page_$page_id - $summary" \
                   --assignee "nzta-aiden-liu" \
-                  --body "/template"
+                  --body-file ".github/pull_request_templates.md"
               fi
             fi
           done
